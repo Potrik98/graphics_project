@@ -14,6 +14,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "gamelogic.h"
 #include "sceneGraph.hpp"
+#include <vector>
 
 
 enum KeyFrameAction {
@@ -32,6 +33,11 @@ SceneNode* rootNode;
 SceneNode* boxNode;
 SceneNode* ballNode;
 SceneNode* padNode;
+
+SceneNode* light_1;
+SceneNode* light_2;
+SceneNode* light_3;
+std::vector<SceneNode*> lights;
 
 double ballRadius = 3.0f;
 
@@ -112,6 +118,21 @@ void initGame(GLFWwindow* window, CommandLineOptions gameOptions) {
     padNode = createSceneNode();
     ballNode = createSceneNode();
 
+    light_1 = createSceneNode();
+    light_2 = createSceneNode();
+    light_3 = createSceneNode();
+    lights.push_back(light_1);
+    lights.push_back(light_2);
+    lights.push_back(light_3);
+    light_1->nodeType = SceneNodeType::POINT_LIGHT;
+    light_2->nodeType = SceneNodeType::POINT_LIGHT;
+    light_3->nodeType = SceneNodeType::POINT_LIGHT;
+    ballNode->children.push_back(light_1);
+    rootNode->children.push_back(light_2);
+    rootNode->children.push_back(light_3);
+    light_2->position.x = -100;
+    light_3->position.x = 100;
+
     rootNode->children.push_back(boxNode);
     rootNode->children.push_back(padNode);
     rootNode->children.push_back(ballNode);
@@ -131,7 +152,6 @@ void initGame(GLFWwindow* window, CommandLineOptions gameOptions) {
 }
 
 void updateNodeTransformations(SceneNode* node, glm::mat4 transformationThusFar) {
-
     glm::mat4 transformationMatrix(1.0);
 
     switch(node->nodeType) {
@@ -146,6 +166,8 @@ void updateNodeTransformations(SceneNode* node, glm::mat4 transformationThusFar)
                     * glm::scale(glm::mat4(1.0), node->scale);
             break;
         case POINT_LIGHT:
+            transformationMatrix =
+                    glm::translate(glm::mat4(1.0), node->position);
 
             break;
         case SPOT_LIGHT:
@@ -162,6 +184,7 @@ void updateNodeTransformations(SceneNode* node, glm::mat4 transformationThusFar)
 
 void updateFrame(GLFWwindow* window) {
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    // printf("%.3f, %.3f %.3f\n", ballNode->position.x, ballNode->position.y, ballNode->position.z);
 
     double timeDelta = getTimeDeltaSeconds();
 
@@ -288,16 +311,8 @@ void updateFrame(GLFWwindow* window) {
         }
     }
 
-    glm::mat4 projection = glm::perspective(glm::radians(90.0f), float(windowWidth) / float(windowHeight), 0.1f,
-                                            120.f);
-
-    glm::mat4 cameraTransform =   glm::translate(glm::mat4(1), glm::vec3(0, 0, 0))
-                                * glm::rotate(glm::mat4(1.0), 0.2f, glm::vec3(1, 0, 0))
-                                * glm::rotate(glm::mat4(1.0), float(M_PI), glm::vec3(0, 1, 0));
-
-    glm::mat4 VP = projection * cameraTransform;
-
-    updateNodeTransformations(rootNode, VP);
+    glm::mat4 id(1);
+    updateNodeTransformations(rootNode, id);
 
     boxNode->position = {-boxDimensions.x / 2, -boxDimensions.y / 2 - 15, boxDimensions.z - 10};
     padNode->position = {-boxDimensions.x / 2 + (1 - padPositionX) * (boxDimensions.x - padDimensions.x),
@@ -312,7 +327,39 @@ void updateFrame(GLFWwindow* window) {
 
 
 void renderNode(SceneNode* node) {
-    glUniformMatrix4fv(3, 1, GL_FALSE, glm::value_ptr(node->currentTransformationMatrix));
+    glm::mat4 projection = glm::perspective(glm::radians(90.0f), float(windowWidth) / float(windowHeight), 0.1f,
+                                            120.f);
+
+    glm::mat4 cameraTransform =   glm::translate(glm::mat4(1), glm::vec3(0, 0, 0))
+                                * glm::rotate(glm::mat4(1.0), 0.2f, glm::vec3(1, 0, 0))
+                                * glm::rotate(glm::mat4(1.0), float(M_PI), glm::vec3(0, 1, 0));
+
+    glm::mat4 VP = projection * cameraTransform;
+
+    glUniformMatrix4fv(3, 1, GL_FALSE, glm::value_ptr(VP));
+    glUniformMatrix4fv(4, 1, GL_FALSE, glm::value_ptr(node->currentTransformationMatrix));
+
+    for (int i = 6; i < 9; ++i) {
+        glUniform3fv(i, 1, glm::value_ptr(
+            glm::vec3(lights[i - 6]->currentTransformationMatrix[3])));
+            // the translation part of the transformation matrix is the 4th vector,
+            // and the position of the light in world coordinates is this translation.
+    }
+
+    // Normal matrix
+    glm::mat4 N = glm::transpose(glm::inverse(node->currentTransformationMatrix));
+    glUniformMatrix4fv(5, 1, GL_FALSE, glm::value_ptr(N));
+
+    // Spot light
+    glm::vec3 light_pos = glm::vec3(0,100,0);
+    glm::vec3 light_dir = glm::normalize(ballNode->position - light_pos);
+    float angle_cos = 0.93969262078f; // 20 degrees
+    glUniform3fv(9, 1, glm::value_ptr(light_pos));
+    glUniform3fv(10, 1, glm::value_ptr(light_dir));
+    glUniform1fv(11, 1, &angle_cos);
+
+    // ball position
+    glUniform3fv(12, 1, glm::value_ptr(ballNode->position));
 
     switch(node->nodeType) {
         case GEOMETRY:
