@@ -14,7 +14,9 @@
 #include <fstream>
 
 enum SceneNodeType {
-	GEOMETRY, POINT_LIGHT, SPOT_LIGHT
+	GEOMETRY, POINT_LIGHT, SPOT_LIGHT,
+	GEOMETRY_2D, NORMAL_MAPPED,
+	TEXTURED, NORMAL_MAPPED_AND_TEXTURED
 };
 
 // In case you haven't got much experience with C or C++, let me explain this "typedef" you see below.
@@ -32,6 +34,8 @@ struct SceneNode {
         VAOIndexCount = 0;
 
         nodeType = GEOMETRY;
+		textureID = 0;
+		normalMapTextureID = 0;
 	}
 
 	// A list of all children that belong to this node.
@@ -52,6 +56,8 @@ struct SceneNode {
 	// The ID of the VAO containing the "appearance" of this SceneNode.
 	int vertexArrayObjectID;
 	unsigned int VAOIndexCount;
+	uint32_t textureID;
+	uint32_t normalMapTextureID;
 
 	// Node type is used to determine how to handle the contents of a node
 	SceneNodeType nodeType;

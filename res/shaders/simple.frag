@@ -2,8 +2,10 @@
 
 in layout(location = 0) vec3 normal_in;
 in layout(location = 1) vec3 position;
+in layout(location = 2) vec2 tex_cd;
+in layout(location = 3) mat3 TBN;
 
-const vec4 ambient_color = vec4(0.4, 0.35, 0.5, 1.0);
+const float ambient_intensity = 1.0;
 const vec4 emissive_color = vec4(0,0,0,1);
 const vec4 light_color = vec4(0.73, 0.94, 0.98, 1.0);
 
@@ -18,18 +20,27 @@ uniform layout(location = 11) float spot_light_1_angle_cos;
 uniform layout(location = 12) vec3 ball_position;
 const float radius = 3.0;
 
+uniform layout(location = 13) bool is_textured;
+uniform layout(location = 14) bool is_lighted;
+uniform layout(location = 15) bool is_normal_mapped;
+
+uniform layout(binding = 0) sampler2D tex_sampl;
+uniform layout(binding = 1) sampler2D nrm_sampl;
+
+vec3 normal;
+
 const vec3 camera_pos = vec3(0, 0, 0);
 const float k = 16; // specular constant
+float spec = 1.0;
 
 // attenuation constants
-const float a = 2;
-const float b = 0.004;
-const float c = 0.0005;
+const float a = 1;
+const float b = 0.000052;
+const float c = 0.0000025;
 
 out vec4 color;
 
-vec4 calculate_light(vec3 light_pos) {
-    vec3 normal = normalize(normal_in);
+vec4 calculate_light(vec3 light_pos, vec4 diffuse_color) {
     vec3 to_light = light_pos - position;
     float dist = length(to_light);
     to_light = normalize(to_light);
@@ -38,16 +49,15 @@ vec4 calculate_light(vec3 light_pos) {
     vec3 to_camera = normalize(camera_pos - position);
     float specular_intensity = pow(max(0, dot(to_camera, refl_light)), k);
     float att = 1.0 / max(1, a + b * dist + c * dist * dist);
-    diffuse_intensity *= att;
-    specular_intensity *= att;
-    return light_color * (diffuse_intensity + specular_intensity);
+    diffuse_intensity *= 2.4 * att;
+    specular_intensity *= att * spec;
+    return (light_color * specular_intensity) + (diffuse_color * diffuse_intensity);
 }
 
-vec4 calculate_spot_light() {
+vec4 calculate_spot_light(vec4 diffuse_color) {
     vec3 to_light = spot_light_1 - position;
     float dist = length(to_light);
     to_light = normalize(to_light);
-    vec3 normal = normalize(normal_in);
     if (dot(spot_light_1_dir, -to_light) < spot_light_1_angle_cos) {
         return vec4(0);
     }
@@ -56,9 +66,9 @@ vec4 calculate_spot_light() {
     vec3 to_camera = normalize(camera_pos - position);
     float specular_intensity = pow(max(0, dot(to_camera, refl_light)), k);
     float att = 1.0 / max(1, a + b * dist + c * dist * dist);
-    diffuse_intensity *= att;
-    specular_intensity *= att;
-    return light_color * (diffuse_intensity + specular_intensity);
+    diffuse_intensity *= 2 * att;
+    specular_intensity *= att * spec;
+    return (light_color * specular_intensity) + (diffuse_color * diffuse_intensity);
 }
 
 bool is_shadowed() {
@@ -79,15 +89,32 @@ bool is_shadowed() {
 
 void main()
 {
-    color = ambient_color + emissive_color;
-    
-    //lights
-    color += calculate_light(light_1);
-    color += calculate_light(light_2);
-    color += calculate_light(light_3);
+    if (is_normal_mapped) {
+        normal = texture(nrm_sampl, tex_cd).xyz;
+        normal = normalize(normal * 2.0 - 1.0);
+        normal = normalize(TBN * normal);
+    } else {
+        normal = normalize(normal_in);
+    }
+    vec4 diffuse_color;
+    if (is_textured) {
+        diffuse_color = texture(tex_sampl, tex_cd);
+        spec = 0.4;
+    } else {
+        diffuse_color = vec4(0.2, 0.4, 0.2, 1.0);
+        spec = 1.0;
+    }
+    color = diffuse_color * ambient_intensity;
+    if (is_lighted) {
+        color += emissive_color;
+        //lights
+        color += calculate_light(light_1, diffuse_color);
+        color += calculate_light(light_2, diffuse_color);
+        color += calculate_light(light_3, diffuse_color);
 
-    //spot light
-    if (!is_shadowed()) {
-        color += calculate_spot_light();
+        //spot light
+        if (!is_shadowed()) {
+            color += calculate_spot_light(diffuse_color);
+        }
     }
 }

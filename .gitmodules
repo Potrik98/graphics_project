@@ -22,9 +22,7 @@
 	path = lib/SFML
 	url = https://github.com/SFML/SFML.git
 	branch = master
-[submodule "arrrgh"]
-	path = arrrgh
-	url = https://github.com/ElectricToy/arrrgh.git
 [submodule "lib/lodepng"]
 	path = lib/lodepng
-	url = https://github.com/lvandeve/lodepng
+	url = https://github.com/lvandeve/lodepng.git
+	branch = master
