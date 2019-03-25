@@ -32,4 +32,6 @@
 *.app
 
 build/
+cmake-build-debug/
 lib/glad*/
+.idea/
