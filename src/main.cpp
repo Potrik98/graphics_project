@@ -1,6 +1,6 @@
 // Local headers
 #include "utilities/window.hpp"
-#include "program.hpp"
+#include "demo/demo.h"
 
 // System headers
 #include <glad/glad.h>
@@ -68,7 +68,8 @@ int main() {
     GLFWwindow* window = initialise();
 
     // Run an OpenGL application using this window
-    runProgram(window);
+    Demo program(window);
+    program.run();
 
     // Terminate GLFW (no need to call glfwDestroyWindow)
     glfwTerminate();
