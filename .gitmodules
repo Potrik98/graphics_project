@@ -14,14 +14,6 @@
 	path = lib/stb
 	url = https://github.com/nothings/stb.git
 	branch = master
-[submodule "lib/arrrgh"]
-	path = lib/arrrgh
-	url = https://github.com/ElectricToy/arrrgh.git
-	branch = master
-[submodule "lib/SFML"]
-	path = lib/SFML
-	url = https://github.com/SFML/SFML.git
-	branch = master
 [submodule "lib/lodepng"]
 	path = lib/lodepng
 	url = https://github.com/lvandeve/lodepng.git

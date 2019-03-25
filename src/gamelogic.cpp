@@ -108,13 +108,11 @@ void mouseCallback(GLFWwindow* window, double x, double y) {
     }
 }
 
-void initGame(GLFWwindow* window, CommandLineOptions gameOptions) {
+void initGame(GLFWwindow* window) {
     buffer = new sf::SoundBuffer();
     if (!buffer->loadFromFile("../res/Hall of the Mountain King.ogg")) {
         return;
     }
-
-    options = gameOptions;
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
     glfwSetCursorPosCallback(window, mouseCallback);
