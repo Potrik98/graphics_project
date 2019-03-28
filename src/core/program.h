@@ -1,11 +1,13 @@
 #pragma once
 
+#include "window.h"
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
+#include <string>
 
 class Program {
 public:
-    Program(GLFWwindow* window) {
+    explicit Program(GLFWwindow* window) {
         this->window = window;
     }
 
@@ -44,6 +46,8 @@ public:
             glfwSwapBuffers(window);
         }
     }
+
+    WindowParameters windowParameters;
 
 private:
     void handleKeyboardInput() {

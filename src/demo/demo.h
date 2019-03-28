@@ -5,7 +5,13 @@
 
 class Demo : public Program {
 public:
-    Demo(GLFWwindow* window) : Program(window) {}
+    Demo(GLFWwindow* window) : Program(window) {
+        windowParameters.windowWidth = 1920;
+        windowParameters.windowHeight = 1080;
+        windowParameters.windowSamples = 4;
+        windowParameters.windowResizable = GL_TRUE;
+        windowParameters.windowTitle = "Graphics project demo";
+    }
 
     void update() override;
 

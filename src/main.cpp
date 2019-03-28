@@ -1,5 +1,4 @@
 // Local headers
-#include "utilities/window.hpp"
 #include "demo/demo.h"
 
 // System headers
@@ -32,13 +31,13 @@ GLFWwindow* initialise() {
     glfwSetErrorCallback(glfwErrorCallback);
 
     // Set additional window options
-    glfwWindowHint(GLFW_RESIZABLE, windowResizable);
-    glfwWindowHint(GLFW_SAMPLES, windowSamples);  // MSAA
+    glfwWindowHint(GLFW_RESIZABLE, 1);
+    glfwWindowHint(GLFW_SAMPLES, 0);  // MSAA
 
     // Create window using GLFW
-    GLFWwindow* window = glfwCreateWindow(windowWidth,
-                                          windowHeight,
-                                          windowTitle.c_str(),
+    GLFWwindow* window = glfwCreateWindow(100,
+                                          100,
+                                          "a",
                                           nullptr,
                                           nullptr);
 
@@ -66,9 +65,9 @@ GLFWwindow* initialise() {
 int main() {
     // Initialise window using GLFW
     GLFWwindow* window = initialise();
+    Demo program(window);
 
     // Run an OpenGL application using this window
-    Demo program(window);
     program.run();
 
     // Terminate GLFW (no need to call glfwDestroyWindow)
