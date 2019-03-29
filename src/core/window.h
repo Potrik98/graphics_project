@@ -20,7 +20,7 @@ static void glfwErrorCallback(int error, const char* description) {
 
 class Window {
 public:
-    Window(const WindowParameters& windowParameters) {
+    explicit Window(const WindowParameters& windowParameters) {
         // Initialise GLFW
         if (!glfwInit()) {
             fprintf(stderr, "Could not start GLFW\n");
