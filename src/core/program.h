@@ -1,15 +1,11 @@
 #pragma once
 
 #include "window.h"
-#include <GLFW/glfw3.h>
-#include <glad/glad.h>
 #include <string>
 
 class Program {
 public:
-    explicit Program(GLFWwindow* window) {
-        this->window = window;
-    }
+    explicit Program(const WindowParameters& windowParameters) : window(windowParameters) {}
 
     virtual void update() = 0;
 
@@ -31,7 +27,7 @@ public:
         init();
 
         // Rendering Loop
-        while (!glfwWindowShouldClose(window)) {
+        while (!glfwWindowShouldClose(window.glfwWindow)) {
             // Clear colour and depth buffers
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -43,19 +39,17 @@ public:
             handleKeyboardInput();
 
             // Flip buffers
-            glfwSwapBuffers(window);
+            glfwSwapBuffers(window.glfwWindow);
         }
     }
-
-    WindowParameters windowParameters;
 
 private:
     void handleKeyboardInput() {
         // Use escape key for terminating the GLFW window
-        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-            glfwSetWindowShouldClose(window, GL_TRUE);
+        if (glfwGetKey(window.glfwWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+            glfwSetWindowShouldClose(window.glfwWindow, GL_TRUE);
         }
     }
 
-    GLFWwindow* window;
+    Window window;
 };
