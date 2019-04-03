@@ -3,6 +3,7 @@
 #include <glad/glad.h>
 #include "core/program.h"
 #include "graphics/shader.h"
+#include "scene/scene.h"
 
 class Demo : public Program {
 public:
@@ -14,6 +15,8 @@ public:
             "Graphics project demo",
     }) {}
 
+    ~Demo();
+
     void update() override;
 
     void render() override;
@@ -21,4 +24,5 @@ public:
     void init() override;
 
     Shader shader;
+    SceneNode* root_node;
 };

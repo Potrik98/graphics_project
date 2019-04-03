@@ -5,6 +5,8 @@
 #include <glm/glm.hpp>
 #include <vector>
 
+#include "mesh.h"
+
 /*
  * Class for handling vertex array objects
  * with an arbitrary amount of vertex attributes.
@@ -20,8 +22,18 @@
  */
 class VertexArrayObject {
 public:
-    VertexArrayObject() {
-        m_index_count = 0;
+    VertexArrayObject(const Mesh& mesh) :
+            m_index_count(0),
+            m_vertex_count(0) {
+        indexBuffer(mesh.indices);
+        vertexBuffer<3>(mesh.vertices, 0);
+        vertexBuffer<2>(mesh.textureCoordinates, 1);
+        vertexBuffer<3>(mesh.normals, 2);
+    }
+
+    VertexArrayObject() :
+            m_index_count(0),
+            m_vertex_count(0) {
         glGenVertexArrays(1, &m_id);
     }
 
@@ -48,7 +60,7 @@ public:
      * The vao will use this index array when rendering.
      */
     VertexArrayObject* indexBuffer(const std::vector<unsigned int>& indices) {
-        return this->indexBuffer(&indices[0], static_cast<const unsigned int&>(indices.size()));
+        return this->indexBuffer(indices.data(), static_cast<const unsigned int&>(indices.size()));
     }
 
     /*
@@ -107,7 +119,7 @@ public:
     VertexArrayObject* vertexBuffer(const std::vector<glm::vec<component_count, float, glm::defaultp>> vertices,
                                     const unsigned int& location) {
         const auto vertex_count = static_cast<const unsigned int>(vertices.size());
-        return this->vertexBuffer(vertices.data(),
+        return this->vertexBuffer(reinterpret_cast<const float*>(vertices.data()),
                                   vertex_count,
                                   component_count,
                                   location);
@@ -125,5 +137,5 @@ public:
 private:
     GLuint m_id{};
     unsigned int m_index_count;
-    unsigned int m_vertex_count{};
+    unsigned int m_vertex_count;
 };

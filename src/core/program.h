@@ -43,7 +43,7 @@ public:
         }
     }
 
-private:
+protected:
     void handleKeyboardInput() {
         // Use escape key for terminating the GLFW window
         if (glfwGetKey(window.glfwWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
